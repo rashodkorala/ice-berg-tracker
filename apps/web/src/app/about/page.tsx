@@ -103,9 +103,56 @@ export default function AboutPage() {
           </li>
         </ul>
 
+        <h2 className="mt-10 font-serif text-2xl text-ink">Colophon</h2>
+        <p>
+          Built by{" "}
+          <a
+            className="text-ocean-dark underline decoration-border"
+            href="https://www.rashodkorala.com"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Rashod
+          </a>{" "}
+          in Newfoundland. Get in touch:
+        </p>
+        <ul className="list-disc space-y-1 pl-6">
+          <li>
+            Web ·{" "}
+            <a
+              className="text-ocean-dark underline decoration-border"
+              href="https://www.rashodkorala.com"
+              target="_blank"
+              rel="noreferrer"
+            >
+              rashodkorala.com
+            </a>
+          </li>
+          <li>
+            Email ·{" "}
+            <a
+              className="text-ocean-dark underline decoration-border"
+              href="mailto:hello@rashodkorala.com"
+            >
+              hello@rashodkorala.com
+            </a>
+          </li>
+          <li>
+            GitHub ·{" "}
+            <a
+              className="text-ocean-dark underline decoration-border"
+              href="https://github.com/rashodkorala"
+              target="_blank"
+              rel="noreferrer"
+            >
+              @rashodkorala
+            </a>
+          </li>
+        </ul>
+
         <p className="mt-10 text-xs text-ink-light">
-          Made in Newfoundland. Data © Norwegian Meteorological Institute &
-          Copernicus, licensed under{" "}
+          Data © Norwegian Meteorological Institute & Copernicus, licensed
+          under{" "}
           <a
             className="underline decoration-border"
             href="https://creativecommons.org/licenses/by/4.0/"
@@ -114,7 +161,7 @@ export default function AboutPage() {
           >
             CC BY 4.0
           </a>
-          .
+          . Site code MIT.
         </p>
       </div>
     </div>

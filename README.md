@@ -62,3 +62,12 @@ apps/
 ```
 
 See `cozy-singing-hinton.md` for the full implementation plan.
+
+## Author
+
+Built by Rashod ([rashodkorala.com](https://www.rashodkorala.com) ·
+[hello@rashodkorala.com](mailto:hello@rashodkorala.com) ·
+[@rashodkorala](https://github.com/rashodkorala)) in Newfoundland.
+
+Data © Norwegian Meteorological Institute & Copernicus, licensed under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Site code MIT.
