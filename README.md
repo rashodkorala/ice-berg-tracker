@@ -29,7 +29,7 @@ cd apps/api && uv sync          # installs Python deps into apps/api/.venv
 ```bash
 pnpm dev                        # starts API (:8000) + web (:3000) in parallel
 pnpm --filter api seed          # one-off fetch of the latest satellite pass
-pnpm --filter api seed -- --wipe   # nuke + reseed (useful when switching sources)
+pnpm seed:wipe                     # nuke + reseed (recommended; avoids uv/`--` quirks)
 ```
 
 Verify:

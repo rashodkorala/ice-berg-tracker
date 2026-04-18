@@ -1,9 +1,12 @@
 """Fetch from ERDDAP and seed MongoDB with iceberg observations.
 
 Usage:
-    pnpm --filter api seed                 # incremental — adds new observations
-    pnpm --filter api seed -- --wipe       # drops collections first (clean slate)
-    pnpm --filter api seed -- --since 2022-01-01
+    pnpm --filter api seed                     # incremental — adds new observations
+    pnpm --filter api seed:wipe                # wipe + reseed (recommended)
+    pnpm --filter api exec … --wipe            # uv inserts `--`; we strip stray `--`
+
+    uv runs as `python -m scripts.seed_db -- --wipe`; the lone `--` is stripped so
+    argparse receives only `--wipe`.
 """
 from __future__ import annotations
 
@@ -36,7 +39,10 @@ def _parse_args() -> argparse.Namespace:
         default=None,
         help="Only fetch observations at or after this ISO date (e.g. 2022-01-01).",
     )
-    return parser.parse_args()
+    # uv run ... script -- ... forwards args after a `--` separator; Python still
+    # receives that lone `--`, which argparse rejects unless we drop it.
+    filtered = [a for a in sys.argv[1:] if a != "--"]
+    return parser.parse_args(filtered)
 
 
 async def seed(args: argparse.Namespace) -> int:
