@@ -7,6 +7,8 @@ import type { Iceberg } from "@/lib/types";
 
 interface IcebergMarkerProps {
   iceberg: Iceberg;
+  /** Opens the Three.js scale viewer (wired from `MapView`). */
+  onInspect?: (iceberg: Iceberg) => void;
 }
 
 const BASE_RADIUS = 4;
@@ -21,7 +23,7 @@ function radiusForArea(area: number | null | undefined): number {
   return Math.max(3, Math.min(16, r));
 }
 
-export function IcebergMarker({ iceberg }: IcebergMarkerProps) {
+export function IcebergMarker({ iceberg, onInspect }: IcebergMarkerProps) {
   const obs = iceberg.latest_observation;
   if (!obs) return null;
 
@@ -53,6 +55,15 @@ export function IcebergMarker({ iceberg }: IcebergMarkerProps) {
               <dt>Observed</dt>
               <dd className="text-ink">{formatDate(obs.observed_at)}</dd>
             </div>
+            {onInspect ? (
+              <button
+                type="button"
+                className="mt-4 w-full rounded border border-ocean bg-ocean/light py-2 text-xs font-medium text-ocean-dark hover:bg-ocean hover:text-white"
+                onClick={() => onInspect(iceberg)}
+              >
+                View relative size (3D)
+              </button>
+            ) : null}
             {iceberg.source_glacier ? (
               <div className="flex justify-between gap-4">
                 <dt>Origin</dt>

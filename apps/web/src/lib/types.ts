@@ -5,6 +5,8 @@ export interface LatestObservation {
   longitude: number;
   observed_at: string;
   area_sqnm: number | null;
+  length_nm?: number | null;
+  width_nm?: number | null;
 }
 
 export interface Iceberg {

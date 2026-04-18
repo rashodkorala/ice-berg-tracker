@@ -7,7 +7,8 @@ Meteorological Institute.
 
 - **Backend** (`apps/api`): Python + FastAPI, MongoDB (Atlas), pluggable data pipeline
   (met.no North Atlantic · NOAA USNIC Antarctic)
-- **Frontend** (`apps/web`): Next.js + Tailwind, React-Leaflet maps, Recharts analytics
+- **Frontend** (`apps/web`): Next.js + Tailwind, React-Leaflet maps, React Three Fiber
+  (click a marker → 3D block scaled to inferred length/width/thickness from SAR)
 - **Monorepo**: Turborepo + pnpm workspaces
 
 ## Prerequisites

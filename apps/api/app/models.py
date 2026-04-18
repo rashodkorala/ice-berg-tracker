@@ -26,6 +26,8 @@ class LatestObservation(BaseModel):
     longitude: float
     observed_at: datetime
     area_sqnm: float | None = None
+    length_nm: float | None = None
+    width_nm: float | None = None
 
 
 class Iceberg(BaseModel):

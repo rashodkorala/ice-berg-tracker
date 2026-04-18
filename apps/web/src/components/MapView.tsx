@@ -1,11 +1,16 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import type { LatLngBoundsExpression, LatLngExpression } from "leaflet";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MapContainer, Polyline, TileLayer, useMap } from "react-leaflet";
 
 import { IcebergMarker } from "./IcebergMarker";
 import type { Iceberg, IcebergTrack } from "@/lib/types";
+
+const IcebergSizeModal = dynamic(() => import("./IcebergSizeModal"), {
+  ssr: false,
+});
 
 interface MapViewProps {
   icebergs: Iceberg[];
@@ -60,8 +65,10 @@ function FitToBounds({ bounds }: { bounds: LatLngBoundsExpression | null }) {
 
 export default function MapView({ icebergs, tracks }: MapViewProps) {
   const bounds = useMemo(() => computeBounds(icebergs, tracks), [icebergs, tracks]);
+  const [inspectTarget, setInspectTarget] = useState<Iceberg | null>(null);
 
   return (
+    <>
     <MapContainer
       center={FALLBACK_CENTER}
       zoom={FALLBACK_ZOOM}
@@ -93,8 +100,10 @@ export default function MapView({ icebergs, tracks }: MapViewProps) {
         />
       ))}
       {icebergs.map((iceberg) => (
-        <IcebergMarker key={iceberg.name} iceberg={iceberg} />
+        <IcebergMarker key={iceberg.name} iceberg={iceberg} onInspect={setInspectTarget} />
       ))}
     </MapContainer>
+    <IcebergSizeModal iceberg={inspectTarget} onClose={() => setInspectTarget(null)} />
+    </>
   );
 }
