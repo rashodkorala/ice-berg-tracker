@@ -38,39 +38,45 @@ export function IcebergMarker({ iceberg, onInspect }: IcebergMarkerProps) {
         fillOpacity: 0.35,
       }}
     >
-      <Popup>
-        <div className="min-w-[200px] p-3">
+      <Popup
+        maxWidth={320}
+        minWidth={220}
+        autoPanPadding={[20, 56]}
+      >
+        <div className="max-w-[min(280px,85vw)] min-w-[200px]">
           <div className="eyebrow mb-1">{iceberg.status}</div>
-          <div className="font-serif text-lg leading-tight text-ink">{iceberg.name}</div>
+          <div className="break-words font-serif text-lg leading-snug text-ink">
+            {iceberg.name}
+          </div>
           <dl className="mt-3 space-y-1 text-xs text-ink-light">
-            <div className="flex justify-between gap-4">
-              <dt>Position</dt>
-              <dd className="text-ink">{formatLatLon(obs.latitude, obs.longitude)}</dd>
+            <div className="flex justify-between gap-3">
+              <dt className="shrink-0">Position</dt>
+              <dd className="break-words text-right text-ink">{formatLatLon(obs.latitude, obs.longitude)}</dd>
             </div>
-            <div className="flex justify-between gap-4">
-              <dt>Area</dt>
-              <dd className="text-ink">{formatArea(obs.area_sqnm)}</dd>
+            <div className="flex justify-between gap-3">
+              <dt className="shrink-0">Area</dt>
+              <dd className="break-words text-right text-ink">{formatArea(obs.area_sqnm)}</dd>
             </div>
-            <div className="flex justify-between gap-4">
-              <dt>Observed</dt>
-              <dd className="text-ink">{formatDate(obs.observed_at)}</dd>
+            <div className="flex justify-between gap-3">
+              <dt className="shrink-0">Observed</dt>
+              <dd className="break-words text-right text-ink">{formatDate(obs.observed_at)}</dd>
             </div>
-            {onInspect ? (
-              <button
-                type="button"
-                className="mt-4 w-full rounded border border-ocean bg-ocean/light py-2 text-xs font-medium text-ocean-dark hover:bg-ocean hover:text-white"
-                onClick={() => onInspect(iceberg)}
-              >
-                View relative size (3D)
-              </button>
-            ) : null}
             {iceberg.source_glacier ? (
-              <div className="flex justify-between gap-4">
-                <dt>Origin</dt>
-                <dd className="text-ink">{iceberg.source_glacier}</dd>
+              <div className="flex justify-between gap-3">
+                <dt className="shrink-0">Origin</dt>
+                <dd className="break-words text-right text-ink">{iceberg.source_glacier}</dd>
               </div>
             ) : null}
           </dl>
+          {onInspect ? (
+            <button
+              type="button"
+              className="mt-4 w-full rounded border border-ocean bg-ocean/light py-2 text-xs font-medium text-ocean-dark hover:bg-ocean hover:text-white"
+              onClick={() => onInspect(iceberg)}
+            >
+              View relative size (3D)
+            </button>
+          ) : null}
         </div>
       </Popup>
     </CircleMarker>
