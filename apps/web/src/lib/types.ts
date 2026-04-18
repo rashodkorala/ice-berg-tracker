@@ -37,3 +37,19 @@ export interface Observation {
   source: string;
   raw_data?: Record<string, unknown> | null;
 }
+
+/** Vertex along an iceberg track (ordered oldest → newest on the wire). */
+export interface TrackPoint {
+  latitude: number;
+  longitude: number;
+  observed_at: string;
+}
+
+export interface IcebergTrack {
+  iceberg_name: string;
+  points: TrackPoint[];
+}
+
+export interface TracksResponse {
+  tracks: IcebergTrack[];
+}

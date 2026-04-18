@@ -8,7 +8,7 @@ from typing import Any
 from pymongo import UpdateOne
 
 from app.db import icebergs_collection, observations_collection
-from app.models import Iceberg, LatestObservation, Observation
+from app.models import Iceberg, IcebergTrack, LatestObservation, Observation, TrackPoint
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +101,39 @@ async def get_observations(name: str) -> list[Observation]:
     async for doc in cursor:
         results.append(_doc_to_observation(doc))
     return results
+
+
+async def list_tracks(min_points: int = 2) -> list[IcebergTrack]:
+    """Return drift paths for every iceberg with at least `min_points` observations."""
+    pipeline = [
+        {"$sort": {"observed_at": 1}},
+        {
+            "$group": {
+                "_id": "$iceberg_name",
+                "points": {
+                    "$push": {
+                        "latitude": {"$arrayElemAt": ["$location.coordinates", 1]},
+                        "longitude": {"$arrayElemAt": ["$location.coordinates", 0]},
+                        "observed_at": "$observed_at",
+                    }
+                },
+                "n": {"$sum": 1},
+            }
+        },
+        {"$match": {"n": {"$gte": min_points}}},
+        {"$sort": {"_id": 1}},
+    ]
+    cursor = observations_collection().aggregate(pipeline)
+    tracks: list[IcebergTrack] = []
+    async for doc in cursor:
+        raw_points = doc["points"]
+        tracks.append(
+            IcebergTrack(
+                iceberg_name=doc["_id"],
+                points=[TrackPoint.model_validate(p) for p in raw_points],
+            )
+        )
+    return tracks
 
 
 async def count_icebergs() -> int:

@@ -1,20 +1,28 @@
 import { Map } from "@/components/Map";
-import { fetchIcebergs } from "@/lib/api";
+import { fetchIcebergs, fetchTracks } from "@/lib/api";
 import { formatArea, formatDate } from "@/lib/format";
-import type { Iceberg, IcebergListResponse } from "@/lib/types";
+import type { Iceberg, IcebergListResponse, IcebergTrack } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-async function loadIcebergs(): Promise<{
+async function loadPage(): Promise<{
   data: IcebergListResponse | null;
+  tracks: IcebergTrack[];
   error: string | null;
 }> {
   try {
     const data = await fetchIcebergs();
-    return { data, error: null };
+    let tracks: IcebergTrack[] = [];
+    try {
+      const tr = await fetchTracks();
+      tracks = tr.tracks;
+    } catch {
+      tracks = [];
+    }
+    return { data, tracks, error: null };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return { data: null, error: message };
+    return { data: null, tracks: [], error: message };
   }
 }
 
@@ -42,7 +50,7 @@ function computeStats(icebergs: Iceberg[]) {
 }
 
 export default async function HomePage() {
-  const { data, error } = await loadIcebergs();
+  const { data, tracks, error } = await loadPage();
   const icebergs = data?.icebergs ?? [];
   const stats = computeStats(icebergs);
 
@@ -82,7 +90,16 @@ export default async function HomePage() {
             </p>
           </div>
         ) : (
-          <Map icebergs={icebergs} />
+          <div className="relative h-full w-full">
+            <Map icebergs={icebergs} tracks={tracks} />
+            {tracks.length > 0 ? (
+              <div className="pointer-events-none absolute bottom-4 left-4 max-w-sm rounded border border-border bg-paper/95 px-3 py-2 text-xs text-ink-light shadow-sm backdrop-blur-sm">
+                <span className="font-medium text-ink">{tracks.length}</span> drift path
+                {tracks.length === 1 ? "" : "s"} — lines connect older sightings to newer ones
+                for the same iceberg id.
+              </div>
+            ) : null}
+          </div>
         )}
       </section>
 

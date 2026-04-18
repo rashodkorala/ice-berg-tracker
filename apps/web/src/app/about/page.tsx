@@ -61,10 +61,27 @@ export default function AboutPage() {
             upserted into MongoDB.
           </li>
           <li>
-            The Next.js front-end reads the API and auto-fits the map to the
-            current scene.
+            The Next.js front-end draws each berg as a marker and connects
+            repeated sightings with a drift path (see below).
           </li>
         </ol>
+
+        <h2 className="mt-10 font-serif text-2xl text-ink">Drift paths</h2>
+        <p>
+          Whenever the database holds two or more observations for the{" "}
+          <em>same</em> iceberg id (oldest → newest), the map overlays a teal
+          polyline between those coordinates — a simple inferred track from the
+          points we have logged. Antarctic USNIC ids are stable season to
+          season, so paths appear naturally after you seed several weeks of
+          data.
+        </p>
+        <p>
+          Weekly met.no snapshots use anonymous detections renamed from date +
+          coordinates, so separate weeks usually produce unrelated ids unless a
+          berg stays at the exact same rounded location. Increase{" "}
+          <code>METNO_WEEKS</code> and reseed to accumulate history faster, or
+          pipe in a secondary source once we add trajectory matching.
+        </p>
 
         <h2 className="mt-10 font-serif text-2xl text-ink">About the IDs</h2>
         <p>
@@ -74,7 +91,8 @@ export default function AboutPage() {
           and coordinates, e.g. <code>NA-20260416-50.21N-53.42W</code>, so
           re-running the importer never creates duplicates, but a berg tracked
           across multiple weeks will appear under a different name each week.
-          True trajectory linking is on the roadmap.
+          True trajectory linking across snapshots is still on the roadmap —
+          drift lines only connect rows that share the synthetic id today.
         </p>
 
         <h2 className="mt-10 font-serif text-2xl text-ink">Why it matters</h2>

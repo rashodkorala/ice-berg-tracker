@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-import type { Iceberg } from "@/lib/types";
+import type { Iceberg, IcebergTrack } from "@/lib/types";
 
 const MapView = dynamic(() => import("./MapView"), {
   ssr: false,
@@ -13,6 +13,12 @@ const MapView = dynamic(() => import("./MapView"), {
   ),
 });
 
-export function Map({ icebergs }: { icebergs: Iceberg[] }) {
-  return <MapView icebergs={icebergs} />;
+export function Map({
+  icebergs,
+  tracks = [],
+}: {
+  icebergs: Iceberg[];
+  tracks?: IcebergTrack[];
+}) {
+  return <MapView icebergs={icebergs} tracks={tracks} />;
 }

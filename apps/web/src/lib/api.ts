@@ -1,4 +1,4 @@
-import type { Iceberg, IcebergListResponse, Observation } from "./types";
+import type { Iceberg, IcebergListResponse, Observation, TracksResponse } from "./types";
 
 /**
  * Base origin for backend calls. On the server we talk to the API directly; in
@@ -40,4 +40,8 @@ export async function fetchIceberg(name: string): Promise<Iceberg> {
 
 export async function fetchObservations(name: string): Promise<Observation[]> {
   return request<Observation[]>(`/api/icebergs/${encodeURIComponent(name)}/observations`);
+}
+
+export async function fetchTracks(): Promise<TracksResponse> {
+  return request<TracksResponse>("/api/icebergs/tracks");
 }

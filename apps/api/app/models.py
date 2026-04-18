@@ -68,6 +68,25 @@ class IcebergListResponse(BaseModel):
     icebergs: list[Iceberg]
 
 
+class TrackPoint(BaseModel):
+    """Ordered vertex along an iceberg drift path."""
+
+    latitude: float
+    longitude: float
+    observed_at: datetime
+
+
+class IcebergTrack(BaseModel):
+    """Observations for one iceberg sorted oldest → newest (two or more points)."""
+
+    iceberg_name: str
+    points: list[TrackPoint]
+
+
+class TracksResponse(BaseModel):
+    tracks: list[IcebergTrack]
+
+
 class HealthResponse(BaseModel):
     status: Literal["ok"] = "ok"
     db: Literal["connected", "disconnected", "unknown"] = "unknown"

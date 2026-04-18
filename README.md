@@ -53,6 +53,12 @@ Because met.no sightings have no persistent IDs, synthetic names are derived
 from the observation date and coordinates (`NA-YYYYMMDD-LAT-LON`), keeping
 reseeds idempotent.
 
+**Drift paths:** `GET /api/icebergs/tracks` returns every iceberg with two or
+more stored observations, with points ordered in time. The map draws a
+polyline for each. For met.no, set `METNO_WEEKS=4` (or similar) in `.env` and
+re-seed to build history; for USNIC Antarctic ids, paths accumulate across
+reseeds automatically because names are stable.
+
 ## Repo layout
 
 ```

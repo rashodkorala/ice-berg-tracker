@@ -2,13 +2,14 @@
 
 import type { LatLngBoundsExpression, LatLngExpression } from "leaflet";
 import { useEffect, useMemo } from "react";
-import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, Polyline, TileLayer, useMap } from "react-leaflet";
 
 import { IcebergMarker } from "./IcebergMarker";
-import type { Iceberg } from "@/lib/types";
+import type { Iceberg, IcebergTrack } from "@/lib/types";
 
 interface MapViewProps {
   icebergs: Iceberg[];
+  tracks: IcebergTrack[];
 }
 
 // Fallback view if the DB is empty: the NW Atlantic iceberg alley so an empty
@@ -16,21 +17,31 @@ interface MapViewProps {
 const FALLBACK_CENTER: LatLngExpression = [55, -52];
 const FALLBACK_ZOOM = 4;
 
-function computeBounds(icebergs: Iceberg[]): LatLngBoundsExpression | null {
-  const points = icebergs
-    .map((b) => b.latest_observation)
-    .filter((o): o is NonNullable<typeof o> => o != null);
-  if (points.length === 0) return null;
+function computeBounds(
+  icebergs: Iceberg[],
+  tracks: IcebergTrack[],
+): LatLngBoundsExpression | null {
+  const coords: [number, number][] = [];
+  for (const b of icebergs) {
+    const o = b.latest_observation;
+    if (o) coords.push([o.latitude, o.longitude]);
+  }
+  for (const t of tracks) {
+    for (const p of t.points) {
+      coords.push([p.latitude, p.longitude]);
+    }
+  }
+  if (coords.length === 0) return null;
 
-  let minLat = points[0].latitude;
-  let maxLat = points[0].latitude;
-  let minLon = points[0].longitude;
-  let maxLon = points[0].longitude;
-  for (const p of points) {
-    if (p.latitude < minLat) minLat = p.latitude;
-    if (p.latitude > maxLat) maxLat = p.latitude;
-    if (p.longitude < minLon) minLon = p.longitude;
-    if (p.longitude > maxLon) maxLon = p.longitude;
+  let minLat = coords[0][0];
+  let maxLat = coords[0][0];
+  let minLon = coords[0][1];
+  let maxLon = coords[0][1];
+  for (const [lat, lon] of coords) {
+    if (lat < minLat) minLat = lat;
+    if (lat > maxLat) maxLat = lat;
+    if (lon < minLon) minLon = lon;
+    if (lon > maxLon) maxLon = lon;
   }
   return [
     [minLat, minLon],
@@ -47,8 +58,8 @@ function FitToBounds({ bounds }: { bounds: LatLngBoundsExpression | null }) {
   return null;
 }
 
-export default function MapView({ icebergs }: MapViewProps) {
-  const bounds = useMemo(() => computeBounds(icebergs), [icebergs]);
+export default function MapView({ icebergs, tracks }: MapViewProps) {
+  const bounds = useMemo(() => computeBounds(icebergs, tracks), [icebergs, tracks]);
 
   return (
     <MapContainer
@@ -68,6 +79,19 @@ export default function MapView({ icebergs }: MapViewProps) {
         maxZoom={19}
       />
       <FitToBounds bounds={bounds} />
+      {tracks.map((track) => (
+        <Polyline
+          key={`track-${track.iceberg_name}`}
+          positions={track.points.map((p) => [p.latitude, p.longitude])}
+          pathOptions={{
+            color: "#1B6B93",
+            weight: 2,
+            opacity: 0.55,
+            lineCap: "round",
+            lineJoin: "round",
+          }}
+        />
+      ))}
       {icebergs.map((iceberg) => (
         <IcebergMarker key={iceberg.name} iceberg={iceberg} />
       ))}
