@@ -1,8 +1,9 @@
 """FastAPI application entry point — CORS, lifespan, routers."""
 from __future__ import annotations
 
+import asyncio
 import logging
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,11 +22,18 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     configure_logging(settings.log_level)
     logger.info("Iceberg Tracker API starting")
-    try:
-        await ensure_indexes()
-    except Exception as exc:
-        logger.error("Index setup failed (continuing anyway): %s", exc)
+
+    async def _ensure_indexes_bg():
+        try:
+            await ensure_indexes()
+        except Exception as exc:
+            logger.error("Index setup failed (continuing anyway): %s", exc)
+
+    index_task = asyncio.create_task(_ensure_indexes_bg())
     yield
+    index_task.cancel()
+    with suppress(asyncio.CancelledError):
+        await index_task
     await close_client()
     logger.info("Iceberg Tracker API shutdown complete")
 
@@ -51,11 +59,17 @@ def create_app() -> FastAPI:
 
     @app.get("/health", response_model=HealthResponse, tags=["meta"])
     async def health() -> HealthResponse:
+        """Liveness for load balancers (Render, etc.) — no external calls."""
+        return HealthResponse()
+
+    @app.get("/health/ready", response_model=HealthResponse, tags=["meta"])
+    async def health_ready() -> HealthResponse:
+        """Optional readiness: verifies MongoDB is reachable."""
         try:
-            await get_client().admin.command("ping")
+            await asyncio.wait_for(get_client().admin.command("ping"), timeout=3.0)
             return HealthResponse(db="connected")
         except Exception as exc:
-            logger.warning("DB health check failed: %s", exc)
+            logger.warning("DB readiness check failed: %s", exc)
             return HealthResponse(db="disconnected")
 
     @app.get("/", tags=["meta"])
