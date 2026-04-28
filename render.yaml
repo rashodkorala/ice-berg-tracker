@@ -1,0 +1,46 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# After deploy, set MONGODB_URI (and METNO_USER_AGENT with real contact info) on the API service if prompted.
+
+services:
+  - type: web
+    name: iceberg-tracker-api
+    runtime: python
+    region: oregon
+    plan: free
+    branch: main
+    rootDir: apps/api
+    buildCommand: curl -LsSf https://astral.sh/uv/install.sh | sh && $HOME/.local/bin/uv sync --frozen --no-dev
+    startCommand: .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB
+        value: iceberg_tracker
+      - key: DATA_SOURCE
+        value: metno
+      - key: METNO_USER_AGENT
+        sync: false
+      - key: LOG_LEVEL
+        value: INFO
+
+  - type: web
+    name: iceberg-tracker-web
+    runtime: node
+    region: oregon
+    plan: free
+    branch: main
+    rootDir: .
+    buildCommand: corepack enable && corepack prepare pnpm@10.30.3 --activate && pnpm install --frozen-lockfile && pnpm --filter web build
+    startCommand: corepack enable && corepack prepare pnpm@10.30.3 --activate && pnpm --filter web start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22.12.0"
+      - key: API_ORIGIN
+        fromService:
+          name: iceberg-tracker-api
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL

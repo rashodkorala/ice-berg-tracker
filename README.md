@@ -40,6 +40,27 @@ curl http://localhost:8000/api/icebergs | jq '.count'
 open http://localhost:3000
 ```
 
+## Deploy on Render
+
+The repo includes [`render.yaml`](render.yaml) (Blueprint) with two **Web** services:
+
+1. **iceberg-tracker-api** — FastAPI in `apps/api` (`uv sync` + `uvicorn`, `PYTHON_VERSION` 3.12).
+2. **iceberg-tracker-web** — Next.js from the monorepo root (`pnpm install` + `pnpm --filter web build`).
+
+**Setup**
+
+1. In the [Render Dashboard](https://dashboard.render.com), choose **New → Blueprint** and connect this repository.
+2. When prompted, set **MONGODB_URI** (Atlas connection string) and **METNO_USER_AGENT** (real contact URL/email per [met.no’s policy](https://api.met.no/weatherapi/iceberg/0.1/documentation)) on the API service.
+3. Deploy. The web service gets **API_ORIGIN** from the API’s `RENDER_EXTERNAL_URL` so Next can rewrite `/api/*` to the backend.
+
+**After first deploy**, seed production data from your machine (or a one-off Render shell) using your deployed API’s MongoDB URI:
+
+```bash
+MONGODB_URI="your-atlas-uri" pnpm --filter api seed
+```
+
+Allow Atlas connections from Render (often `0.0.0.0/0` in Network Access with a strong DB user password). Free web services may spin down after idle; upgrade or accept cold starts.
+
 ## Data sources
 
 The backend dispatches on `DATA_SOURCE` in `.env`:
