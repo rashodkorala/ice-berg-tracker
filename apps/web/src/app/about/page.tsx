@@ -61,39 +61,79 @@ export default function AboutPage() {
             upserted into MongoDB.
           </li>
           <li>
-            The Next.js front-end draws each berg as a marker and connects
-            repeated sightings with a drift path (see below).
+            A spatial nearest-neighbour algorithm links the same berg across
+            consecutive weekly scans (see below).
+          </li>
+          <li>
+            The Next.js front-end draws each berg as a marker and overlays drift
+            paths for icebergs with multiple linked observations.
           </li>
         </ol>
 
         <h2 className="mt-10 font-serif text-2xl text-ink">Drift paths</h2>
         <p>
-          Whenever the database holds two or more observations for the{" "}
-          <em>same</em> iceberg id (oldest → newest), the map overlays a teal
-          polyline between those coordinates — a simple inferred track from the
-          points we have logged. Antarctic USNIC ids are stable season to
-          season, so paths appear naturally after you seed several weeks of
-          data.
+          From 2026 the tracker uses a greedy spatial nearest-neighbour
+          algorithm to link met.no observations across consecutive weekly scans.
+          For each pair of adjacent weeks, every berg in the later scan is
+          matched to its closest candidate in the previous scan — provided the
+          two detections are within <strong>30 nm</strong> of each other and
+          their SAR footprint areas differ by less than 4&times;. Matched bergs
+          in the later week inherit the earlier week&rsquo;s name so that
+          MongoDB upserts merge them into a single tracked entity.
         </p>
         <p>
-          Weekly met.no snapshots use anonymous detections renamed from date +
-          coordinates, so separate weeks usually produce unrelated ids unless a
-          berg stays at the exact same rounded location. Increase{" "}
-          <code>METNO_WEEKS</code> and reseed to accumulate history faster, or
-          pipe in a secondary source once we add trajectory matching.
+          On the map, two line styles distinguish track quality:
         </p>
+        <ul className="list-disc space-y-1 pl-6">
+          <li>
+            <strong>Solid lines</strong> — USNIC Antarctic icebergs with
+            stable analyst-assigned IDs. These are real continuous tracks.
+          </li>
+          <li>
+            <strong>Dashed lines</strong> — met.no SAR bergs linked by proximity
+            match. The path is inferred, not a continuous satellite fix.
+          </li>
+        </ul>
 
         <h2 className="mt-10 font-serif text-2xl text-ink">About the IDs</h2>
         <p>
           Unlike the named Antarctic giants (A23A, A68, &hellip;), SAR-detected
           bergs off Newfoundland are anonymous — each weekly scan is a fresh
-          snapshot. We synthesise stable identifiers from the observation date
-          and coordinates, e.g. <code>NA-20260416-50.21N-53.42W</code>, so
-          re-running the importer never creates duplicates, but a berg tracked
-          across multiple weeks will appear under a different name each week.
-          True trajectory linking across snapshots is still on the roadmap —
-          drift lines only connect rows that share the synthetic id today.
+          snapshot. The tracker synthesises stable identifiers from the
+          observation date and coordinates, e.g.{" "}
+          <code>NA-20260416-50.21N-53.42W</code>, so re-running the importer
+          never creates duplicates. From 2026, spatial proximity matching links
+          observations of the same physical berg across consecutive weekly scans,
+          allowing drift paths to accumulate automatically.
         </p>
+
+        <h2 className="mt-10 font-serif text-2xl text-ink">Data quality</h2>
+        <p>
+          Every berg popup carries inline data-quality notes:
+        </p>
+        <ul className="list-disc space-y-2 pl-6">
+          <li>
+            <strong>Synthetic ID</strong> — met.no bergs have no persistent
+            satellite identifier. The name encodes the first-detected position
+            and date; the same berg may appear under a different name if
+            re-detected outside the 30&nbsp;nm matching radius.
+          </li>
+          <li>
+            <strong>Linked track</strong> — shown when the observation was
+            matched to a previous week&rsquo;s detection via spatial proximity.
+            Drift path is an estimate, not a continuous fix.
+          </li>
+          <li>
+            <strong>Staleness warnings</strong> — amber for data older than
+            30&nbsp;days, red for data older than one year (common with USNIC
+            records, which can have multi-year publishing gaps).
+          </li>
+          <li>
+            <strong>Thickness</strong> — not measured by SAR. The 3-D viewer
+            uses a heuristic (≈ 32 % of the shorter footprint dimension, capped
+            at 420&nbsp;m).
+          </li>
+        </ul>
 
         <h2 className="mt-10 font-serif text-2xl text-ink">Why it matters</h2>
         <p>

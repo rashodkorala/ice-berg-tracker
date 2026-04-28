@@ -123,7 +123,10 @@ def _normalize(df: pd.DataFrame) -> pd.DataFrame:
 
     # USNIC publishes length + width but not area — derive it so downstream
     # analytics + the UI always have a `area_sqnm` to key off.
-    derived = out["length_nm"] * out["width_nm"]
+    # Use the ellipse approximation (π/4 × l × w) rather than a rectangle;
+    # a rectangle overestimates area by ~27 % on average for a real berg.
+    import math
+    derived = (math.pi / 4) * out["length_nm"] * out["width_nm"]
     out["area_sqnm"] = out["area_sqnm"].where(out["area_sqnm"].notna(), derived)
 
     return out.reset_index(drop=True)

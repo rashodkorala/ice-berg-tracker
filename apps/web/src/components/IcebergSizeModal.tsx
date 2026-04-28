@@ -6,7 +6,7 @@ import {
   IcebergSizeCanvas,
   formatDimensionSummary,
 } from "@/components/IcebergSizeCanvas";
-import { formatArea, formatDate, formatLatLon } from "@/lib/format";
+import { dataStaleWarning, formatArea, formatDate, formatLatLon, formatSource } from "@/lib/format";
 import { icebergSizeModel } from "@/lib/iceberg-3d";
 import type { Iceberg } from "@/lib/types";
 
@@ -33,6 +33,8 @@ export default function IcebergSizeModal({ iceberg, onClose }: IcebergSizeModalP
     obs.length_nm ?? null,
     obs.width_nm ?? null,
   );
+  const stale = dataStaleWarning(obs.observed_at);
+  const isMetno = obs.source === "metno" || /^NA-\d{8}-/.test(iceberg.name);
 
   return (
     <div
@@ -67,6 +69,18 @@ export default function IcebergSizeModal({ iceberg, onClose }: IcebergSizeModalP
           Drag to orbit — scale is comparative, not a nautical chart.
         </p>
 
+        {stale && (
+          <div
+            className={`mt-3 rounded px-3 py-2 text-xs ${
+              stale.level === "danger"
+                ? "bg-red-50 text-red-700"
+                : "bg-amber-50 text-amber-700"
+            }`}
+          >
+            ⚠ {stale.text}
+          </div>
+        )}
+
         <div className="mt-4">
           <IcebergSizeCanvas scales={scales} icebergKey={iceberg.name} />
         </div>
@@ -86,7 +100,32 @@ export default function IcebergSizeModal({ iceberg, onClose }: IcebergSizeModalP
             <dt className="text-ink-light">Observed</dt>
             <dd className="text-ink">{formatDate(obs.observed_at)}</dd>
           </div>
+          <div className="flex justify-between gap-4">
+            <dt className="text-ink-light">Source</dt>
+            <dd className="text-ink">{formatSource(obs.source)}</dd>
+          </div>
         </dl>
+
+        {(isMetno || obs.data_note) && (
+          <div className="mt-4 space-y-2 rounded border border-border bg-ocean-light/40 p-3 text-xs text-ink-light">
+            <p className="font-medium text-ink">Data quality notes</p>
+            {isMetno && (
+              <p>
+                <span className="font-medium">Synthetic ID:</span> This berg&apos;s name is derived
+                from its first-detected position and date — met.no SAR data carries no persistent
+                iceberg identifier. The same physical berg may appear under a different name if
+                re-detected after drifting.
+              </p>
+            )}
+            {obs.data_note && (
+              <p>
+                <span className="font-medium">Linked track:</span> {obs.data_note}. Consecutive
+                weekly positions were matched by proximity (≤ 55 nm), not a continuous satellite
+                fix. Drift path is an estimate.
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

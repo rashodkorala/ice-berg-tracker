@@ -1,9 +1,9 @@
 import Link from "next/link";
 
 const NAV_LINKS = [
-  { href: "/", label: "Map" },
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/about", label: "About" },
+  { href: "/", label: "Map", live: true },
+  { href: "/dashboard", label: "Dashboard", live: false },
+  { href: "/about", label: "About", live: false },
 ];
 
 export function Navbar() {
@@ -15,7 +15,7 @@ export function Navbar() {
             Iceberg Tracker
           </span>
           <span className="eyebrow hidden sm:inline-block group-hover:text-ocean-dark">
-            Antarctic &amp; North Atlantic
+            North Atlantic · Iceberg Alley
           </span>
         </Link>
         <nav className="flex items-center gap-6 text-sm text-ink-light">
@@ -23,8 +23,15 @@ export function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className="transition-colors hover:text-ocean-dark"
+              className="flex items-center gap-1.5 transition-colors hover:text-ocean-dark"
             >
+              {link.live && (
+                <span
+                  className="inline-block h-1.5 w-1.5 animate-pulse rounded-full"
+                  style={{ backgroundColor: "#22c55e" }}
+                  aria-hidden="true"
+                />
+              )}
               {link.label}
             </Link>
           ))}

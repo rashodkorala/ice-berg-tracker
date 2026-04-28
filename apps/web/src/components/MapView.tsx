@@ -86,19 +86,27 @@ export default function MapView({ icebergs, tracks }: MapViewProps) {
         maxZoom={19}
       />
       <FitToBounds bounds={bounds} />
-      {tracks.map((track) => (
-        <Polyline
-          key={`track-${track.iceberg_name}`}
-          positions={track.points.map((p) => [p.latitude, p.longitude])}
-          pathOptions={{
-            color: "#1B6B93",
-            weight: 2,
-            opacity: 0.55,
-            lineCap: "round",
-            lineJoin: "round",
-          }}
-        />
-      ))}
+      {tracks.map((track) => {
+        // met.no bergs have synthesized names (NA-YYYYMMDD-lat-lon); their
+        // drift paths are proximity-inferred, not continuously tracked.
+        // Render them dashed + lighter so users can visually distinguish them
+        // from reliable USNIC tracks.
+        const isInferred = /^NA-\d{8}-/.test(track.iceberg_name);
+        return (
+          <Polyline
+            key={`track-${track.iceberg_name}`}
+            positions={track.points.map((p) => [p.latitude, p.longitude])}
+            pathOptions={{
+              color: "#1B6B93",
+              weight: isInferred ? 1.5 : 2,
+              opacity: isInferred ? 0.35 : 0.65,
+              dashArray: isInferred ? "6 5" : undefined,
+              lineCap: "round",
+              lineJoin: "round",
+            }}
+          />
+        );
+      })}
       {icebergs.map((iceberg) => (
         <IcebergMarker key={iceberg.name} iceberg={iceberg} onInspect={setInspectTarget} />
       ))}

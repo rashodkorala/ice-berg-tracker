@@ -7,6 +7,8 @@ export interface LatestObservation {
   area_sqnm: number | null;
   length_nm?: number | null;
   width_nm?: number | null;
+  source?: string | null;
+  data_note?: string | null;
 }
 
 export interface Iceberg {

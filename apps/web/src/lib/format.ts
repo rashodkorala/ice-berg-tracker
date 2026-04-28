@@ -23,6 +23,45 @@ export function formatArea(sqnm: number | null | undefined): string {
   return `${Math.round(sqm).toLocaleString()} m²`;
 }
 
+/** Returns age in whole days, or null if the date is invalid. */
+export function datAgeInDays(iso: string | null | undefined): number | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * Returns a human-readable warning string if the observation is stale,
+ * or null if it is recent enough not to warrant a warning.
+ *
+ * Thresholds:
+ *  - met.no updates weekly → warn after 14 days (missed 2 scans)
+ *  - Any source → warn after 30 days; escalate after 365 days
+ */
+export function dataStaleWarning(
+  iso: string | null | undefined,
+): { level: "warn" | "danger"; text: string } | null {
+  const days = datAgeInDays(iso);
+  if (days === null) return null;
+  if (days > 365) {
+    const years = (days / 365).toFixed(1);
+    return { level: "danger", text: `Data is ${years} yr old — iceberg may no longer exist` };
+  }
+  if (days > 30) {
+    return { level: "warn", text: `Data is ${days} days old` };
+  }
+  return null;
+}
+
+/** Pretty-print the raw source identifier. */
+export function formatSource(source: string | null | undefined): string {
+  if (!source) return "Unknown";
+  if (source === "metno") return "met.no (Copernicus SAR)";
+  if (source === "usnic" || source === "polarwatch") return "NOAA / US National Ice Center";
+  return source;
+}
+
 export function formatLatLon(lat: number, lon: number): string {
   const lat_s = `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? "N" : "S"}`;
   const lon_s = `${Math.abs(lon).toFixed(2)}°${lon >= 0 ? "E" : "W"}`;

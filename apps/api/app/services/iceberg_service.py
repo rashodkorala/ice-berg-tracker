@@ -54,6 +54,8 @@ async def upsert_observations(observations: list[Observation]) -> dict[str, int]
                         area_sqnm=obs.area_sqnm,
                         length_nm=obs.length_nm,
                         width_nm=obs.width_nm,
+                        source=obs.source,
+                        data_note=obs.data_note,
                     ).model_dump(),
                     "updated_at": now,
                 },

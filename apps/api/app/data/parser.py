@@ -38,6 +38,14 @@ def dataframe_to_observations(
 
     for record in _iter_rows(df):
         try:
+            # _linked is set by the met.no multi-week linker; translate to a
+            # human-readable note so the UI can surface it without parsing names.
+            linked: bool = bool(record.get("_linked"))
+            data_note: str | None = (
+                "Position matched to previous week's SAR scan via spatial proximity"
+                if linked
+                else None
+            )
             obs = Observation(
                 iceberg_name=str(record["iceberg_name"]).strip(),
                 observed_at=record["observed_at"],
@@ -48,6 +56,7 @@ def dataframe_to_observations(
                 width_nm=_scrub(record.get("width_nm")),
                 area_sqnm=_scrub(record.get("area_sqnm")),
                 source=str(record.get("source") or default_source),
+                data_note=data_note,
                 raw_data={k: _scrub(v) for k, v in record.items() if not k.startswith("_")},
             )
             observations.append(obs)

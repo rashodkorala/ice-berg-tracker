@@ -28,6 +28,8 @@ class LatestObservation(BaseModel):
     area_sqnm: float | None = None
     length_nm: float | None = None
     width_nm: float | None = None
+    source: str | None = None  # "metno" | "usnic" | "polarwatch"
+    data_note: str | None = None  # human-readable data-quality caveat for the UI
 
 
 class Iceberg(BaseModel):
@@ -54,6 +56,7 @@ class Observation(BaseModel):
     width_nm: float | None = None
     area_sqnm: float | None = None
     source: str = "polarwatch"
+    data_note: str | None = None  # human-readable data-quality caveat for the UI
     raw_data: dict[str, Any] | None = None
 
     @property
