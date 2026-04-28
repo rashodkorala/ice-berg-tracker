@@ -1,0 +1,61 @@
+# Fetches met.no weekly iceberg GeoJSON and upserts into MongoDB (same as `pnpm --filter api seed`).
+# Configure repository Secrets: MONGODB_URI, METNO_USER_AGENT (see README).
+
+name: Seed met.no → MongoDB
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly — adjust if met.no publishes on a different cadence for you.
+    - cron: "0 6 * * 1"
+
+concurrency:
+  group: seed-metno-mongodb
+  cancel-in-progress: false
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Sync API Python environment
+        working-directory: apps/api
+        run: uv sync --frozen --no-dev
+
+      - name: Validate secrets
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          METNO_USER_AGENT: ${{ secrets.METNO_USER_AGENT }}
+        run: |
+          if [ -z "$MONGODB_URI" ] || [ -z "$METNO_USER_AGENT" ]; then
+            echo "::error::Set repository secrets MONGODB_URI and METNO_USER_AGENT (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+
+      - name: Seed MongoDB
+        working-directory: apps/api
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          DATA_SOURCE: metno
+          METNO_USER_AGENT: ${{ secrets.METNO_USER_AGENT }}
+        run: uv run python -m scripts.seed_db

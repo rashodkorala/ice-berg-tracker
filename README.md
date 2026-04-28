@@ -61,6 +61,17 @@ MONGODB_URI="your-atlas-uri" pnpm --filter api seed
 
 Allow Atlas connections from Render (often `0.0.0.0/0` in Network Access with a strong DB user password). Free web services may spin down after idle; upgrade or accept cold starts.
 
+### Scheduled seed (GitHub Actions)
+
+Workflow [`.github/workflows/seed-metno.yml`](.github/workflows/seed-metno.yml) runs **weekly (Monday 06:00 UTC)** and on **manual dispatch**. Add these **repository secrets** (Settings → Secrets and variables → Actions):
+
+| Secret | Purpose |
+|--------|---------|
+| `MONGODB_URI` | Same Atlas SRV string as Render / local (URL-encode password if needed). |
+| `METNO_USER_AGENT` | Same value as production; met.no requires contact info. |
+
+Allow **GitHub Actions** runner IPs in Atlas, or use network access `0.0.0.0/0` with least-privilege DB user.
+
 ## Data sources
 
 The backend dispatches on `DATA_SOURCE` in `.env`:
