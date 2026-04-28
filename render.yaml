@@ -33,8 +33,9 @@ services:
     plan: free
     branch: main
     rootDir: .
-    buildCommand: corepack enable && corepack prepare pnpm@10.30.3 --activate && pnpm install --frozen-lockfile && pnpm --filter web build
-    startCommand: corepack enable && corepack prepare pnpm@10.30.3 --activate && pnpm --filter web start
+    # Corepack + pnpm can fail on Render with "Cannot find matching keyid"; use npm-installed pnpm.
+    buildCommand: npm install -g pnpm@10.30.3 && pnpm install --frozen-lockfile && pnpm --filter web build
+    startCommand: npm install -g pnpm@10.30.3 && pnpm --filter web start
     healthCheckPath: /
     envVars:
       - key: NODE_VERSION
